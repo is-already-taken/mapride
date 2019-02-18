@@ -1,0 +1,11 @@
+{
+  "name": "mapride",
+  "version": "1.0.0",
+  "description": "Youtube and Maps mash up - sync a map to a video showing a bike ride, cab ride, etc.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Thomas Lehmann",
+  "license": "MIT"
+}
