@@ -3,6 +3,8 @@ const path = require("path");
 
 const BrowserSync = require("browser-sync");
 
+const eslint = require("eslint");
+
 const KarmaConfig = require("karma").config;
 const KarmaRunner = require("karma").runner;
 const KarmaServer = require("karma").Server;
@@ -12,14 +14,10 @@ const BrowserSyncConfig = Object.freeze({
 	open: false
 });
 
-function onChange(event, file, browserSync, { port: karmaPort }) {
+function onChange(event, file, browserSync, karmaConfig) {
 	console.log(`BrowserSync: changed file ${file} (${event})`);
 
 	if (event !== "change") {
-		return;
-	}
-
-	if (/src[/]main\.js$/.test(file)) {
 		return;
 	}
 
@@ -28,12 +26,22 @@ function onChange(event, file, browserSync, { port: karmaPort }) {
 	}
 
 	if (/\.js$/.test(file)) {
-		console.log("Javascript changed - run tests.");
-
-		// Run with no-op completion handler to prevent default
-		// handler from exiting the process.
-		KarmaRunner.run({ port: karmaPort }, () => {});
+		onCodeChange(file, karmaConfig);
 	}
+}
+
+function onCodeChange(change, karmaConfig) {
+	if (/src[/]main\.js$/.test(change)) {
+		return;
+	}
+
+	runTests(karmaConfig);
+}
+
+function runTests({ port: karmaPort }) {
+	// Run with no-op completion handler to prevent default
+	// handler from exiting the process.
+	KarmaRunner.run({ port: karmaPort }, () => {});
 }
 
 /**
