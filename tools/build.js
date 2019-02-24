@@ -31,11 +31,47 @@ function onChange(event, file, browserSync, karmaConfig) {
 }
 
 function onCodeChange(change, karmaConfig) {
-	if (/src[/]main\.js$/.test(change)) {
-		return;
-	}
+	runEslint([change])
+		.then(
+			() => {
+				if (/src[/]main\.js$/.test(change)) {
+					return;
+				}
 
-	runTests(karmaConfig);
+				runTests(karmaConfig);
+			},
+			() => { /* don't run tests after linting error */ }
+		);
+}
+
+function runEslint(changes) {
+	return new Promise((resolve, reject) => {
+		const formatter = eslint.CLIEngine.getFormatter();
+		const engine = new eslint.CLIEngine();
+
+		let report;
+
+		console.log(`Linting ${changes.join(", ")}`);
+
+		try {
+			report = engine.executeOnFiles(changes);
+		} catch (e) {
+			console.warn("Error executing eslint on files:", e);
+			reject();
+		}
+
+		console.log(formatter(report.results));
+
+		if (report.errorCount === 0 && report.warningCount === 0) {
+			console.log("Files are lintfree.");
+		}
+
+		if (report.errorCount > 0) {
+			reject();
+		} else {
+			resolve();
+		}
+	});
 }
 
 function runTests({ port: karmaPort }) {
@@ -86,4 +122,10 @@ readConfig()
 	.then(([browserSyncConfig, karmaConfig]) => {
 		startBrowserSync(browserSyncConfig, karmaConfig);
 		startKarma(karmaConfig);
+
+		runEslint([
+			"specs/**/*.js",
+			"src/**/*.js",
+			"tools/**/*.js"
+		]).then(null, () => { /* ignore linting errors for the initial run*/ });
 	});
