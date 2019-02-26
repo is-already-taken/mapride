@@ -17,15 +17,11 @@ const BrowserSyncConfig = Object.freeze({
 function onChange(event, file, browserSync, karmaConfig) {
 	console.log(`BrowserSync: changed file ${file} (${event})`);
 
-	if (event !== "change") {
-		return;
-	}
-
 	if (/\.css$/.test(file)) {
 		browserSync.reload("*.css");
 	}
 
-	if (/\.js$/.test(file)) {
+	if (/\.js$/.test(file) && event !== "unlink") {
 		onCodeChange(file, karmaConfig);
 	}
 }
