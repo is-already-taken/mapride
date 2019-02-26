@@ -101,7 +101,11 @@ function startBrowserSync(browserSyncConfig, karmaConfig) {
 		"./specs/*.spec.js",
 		"./src/*.js",
 		"./src/*.css"
-	], (event, file) => { onChange(event, file, browserSync, karmaConfig); });
+	], {
+		// Ignore initial add/addDir event to prevent per-file handler to run
+		// on startup.
+		ignoreInitial: true
+	}, (event, file) => { onChange(event, file, browserSync, karmaConfig); });
 
 	browserSync.init(Object.assign({ }, browserSyncConfig, {
 		server: "./src"
