@@ -94,9 +94,9 @@ function startBrowserSync(browserSyncConfig, karmaConfig) {
 	const browserSync = BrowserSync.create();
 
 	browserSync.watch([
-		"./specs/*.spec.js",
-		"./src/*.js",
-		"./src/*.css"
+		"./specs/**/*.spec.js",
+		"./src/**/*.js",
+		"./src/**/*.css"
 	], {
 		// Ignore initial add/addDir event to prevent per-file handler to run
 		// on startup.
