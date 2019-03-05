@@ -1,6 +1,7 @@
 
 import { App } from "../src/js/app.js";
 import { BrowserFacade } from "../src/js/foundation/browser.js";
+import { MapModule } from "../src/js/views/map.js";
 import { VideoModule } from "../src/js/views/video.js";
 import { StateModule } from "../src/js/state/state.js";
 
@@ -15,6 +16,7 @@ describe("App", () => {
 
 		spyOn(BrowserFacade, "getLocationHash").and.returnValue(hash);
 		spyOn(StateModule, "State").and.returnValue(mockState);
+		spyOn(MapModule, "Map");
 		spyOn(VideoModule, "Video");
 
 		App();
@@ -26,6 +28,10 @@ describe("App", () => {
 			time: 0,
 			videoId: hash
 		});
+	});
+
+	it("should pass a State object to Map view", () => {
+		expect(MapModule.Map).toHaveBeenCalledWith(mockState);
 	});
 
 	it("should pass a State object to Video view", () => {
