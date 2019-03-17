@@ -1,5 +1,8 @@
 
 function State(data) {
+	let changeBuffer = { };
+	let changeTimeout = null;
+
 	// Internal true source of state, copy to prevent mutation of the 
 	// initial data
 	let state = Object.assign({ }, data);
@@ -25,9 +28,18 @@ function State(data) {
 			console.warn(`Update of undefined property "${property}". Consider defining an initial state.`);
 		}
 
-		state[property] = value;
+		changeBuffer[property] = value;
 
-		publish({ [property]: value });
+		clearTimeout(changeTimeout);
+		changeTimeout = setTimeout(() => {
+			let changes = changeBuffer;
+
+			// Actually apply the change to the internal state
+			Object.assign(state, changeBuffer);
+			changeBuffer = { };
+
+			publish(changes);
+		});
 
 		return true;
 	}
