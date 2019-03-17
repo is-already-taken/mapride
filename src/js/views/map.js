@@ -3,9 +3,12 @@
 
 import { MAPBOX_ACCESS_TOKEN } from "../config.js";
 
+const TRACK_COLOR = "#0000ff";
+
 function Map(appState) {
 	const el = document.querySelector("#map");
 	const map = L.map(el);
+	const trackPolyline = L.polyline([], { color: TRACK_COLOR }).addTo(map);
 
 	L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
 		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -25,6 +28,7 @@ function Map(appState) {
 			latLng = latLngs[Math.floor(latLngs.length / 2)];
 
 			map.setView(latLng, 13);
+			trackPolyline.setLatLngs(latLngs);
 		}
 	});
 }

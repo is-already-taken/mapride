@@ -9,6 +9,7 @@ describe("Map", () => {
 		dummyEl,
 		map,
 		mockState,
+		polyline,
 		stateSetInterceptor,
 		tileLayer;
 
@@ -21,6 +22,7 @@ describe("Map", () => {
 		// Mock Leaflet
 		L = window.L = jasmine.createSpyObj("Leaflet", [
 			"map",
+			"polyline",
 			"tileLayer"
 		]);
 
@@ -28,11 +30,19 @@ describe("Map", () => {
 			"setView"
 		]);
 
+		polyline = jasmine.createSpyObj("Leaflet:polyline", [
+			"addTo",
+			"setLatLngs"
+		]);
+
+		polyline.addTo.and.returnValue(polyline);
+
 		tileLayer = jasmine.createSpyObj("Leaflet:tileLayer", [
 			"addTo"
 		]);
 
 		L.map.and.returnValue(map);
+		L.polyline.and.returnValue(polyline);
 		L.tileLayer.and.returnValue(tileLayer);
 
 		stateSetInterceptor = jasmine.createSpy("state:set")
@@ -84,6 +94,16 @@ describe("Map", () => {
 		it("should add the tileLayer to the map", () => {
 			expect(tileLayer.addTo).toHaveBeenCalledWith(map);
 		});
+
+		it("should create a blue polyline with no geocoordinates", () => {
+			expect(L.polyline).toHaveBeenCalledWith([], {
+				color: "#0000ff"
+			});
+		});
+
+		it("should add the polyline to the map", () => {
+			expect(polyline.addTo).toHaveBeenCalledWith(map);
+		});
 	});
 
 	describe("state changes", () => {
@@ -107,6 +127,12 @@ describe("Map", () => {
 			it("should set the view to the middle route location", () => {
 				expect(map.setView).toHaveBeenCalledWith([5, 6], 13);
 			});
+
+			it("should set polyline with the path locations", () => {
+				const geocoordinates = path.map(([, latLng]) => latLng);
+
+				expect(polyline.setLatLngs).toHaveBeenCalledWith(geocoordinates);
+			});
 		});
 
 		describe('"allReady" does not change', () => {
@@ -118,6 +144,10 @@ describe("Map", () => {
 
 			it("should not set the view", () => {
 				expect(map.setView).not.toHaveBeenCalled();
+			});
+
+			it("should not set geocoordinates", () => {
+				expect(polyline.setLatLngs).not.toHaveBeenCalled();
 			});
 		});
 	});
