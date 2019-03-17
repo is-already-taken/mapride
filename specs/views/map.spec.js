@@ -87,28 +87,38 @@ describe("Map", () => {
 	});
 
 	describe("state changes", () => {
-		it('should set the view to the middle route location when "allReady" changes', () => {
-			mockState.state.path = [
-				[1, [1, 2]],
-				[2, [3, 4]],
-				[3, [5, 6]],
-				[4, [7, 8]],
-				[5, [9, 10]],
-			];
+		const path = [
+			[1, [1, 2]],
+			[2, [3, 4]],
+			[3, [5, 6]],
+			[4, [7, 8]],
+			[5, [9, 10]],
+		];
 
-			mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
-				subscriberFn(mockState.state, { allReady: true });
+		describe('"allReady" changes', () => {
+			beforeEach(() => {
+				mockState.state.path = path;
+
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { allReady: true });
+				});
 			});
 
-			expect(map.setView).toHaveBeenCalledWith([5, 6], 13);
+			it("should set the view to the middle route location", () => {
+				expect(map.setView).toHaveBeenCalledWith([5, 6], 13);
+			});
 		});
 
-		it('should not set the view when "allReady" does not change', () => {
-			mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
-				subscriberFn(mockState.state, { foo: 42 });
+		describe('"allReady" does not change', () => {
+			beforeEach(() => {
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { foo: 42 });
+				});
 			});
 
-			expect(map.setView).not.toHaveBeenCalled();
+			it("should not set the view", () => {
+				expect(map.setView).not.toHaveBeenCalled();
+			});
 		});
 	});
 });
