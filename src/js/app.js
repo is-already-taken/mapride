@@ -10,9 +10,24 @@ export function App() {
 	const videoId = BrowserFacade.getLocationHash().replace(/^#/, "");
 
 	let state = StateModule.State({
+		path: [],
 		playing: false,
+		videoReady: false,
+		allReady: false,
 		time: 0,
 		videoId
+	});
+
+	fetch(`../data/${videoId}_mapride.json`)
+		.then((reader) => reader.json())
+		.then((path) => {
+			state.state.path = path;
+		});
+
+	state.subscribe((_, change) => {
+		if (state.state.videoReady && state.state.path.length > 0) {
+			state.state.allReady = true;
+		}
 	});
 
 	VideoModule.Video(state);
