@@ -24,24 +24,18 @@ describe("state", () => {
 	});
 
 	it("should update the state", () => {
-		state = State({ foo: 47 });
-
 		state.state.foo = 42;
 
 		expect(state.state).toEqual({ foo: 42 });
 	});
 
 	it("should update the state, even if initially undefined", () => {
-		state = State({ foo: 47 });
-
 		state.state.bar = 47;
 
 		expect(state.state).toEqual({ foo: 47, bar: 47 });
 	});
 
 	it("should log a warning if setting an initially undefined property", () => {
-		state = State({ foo: 47 });
-
 		state.state.bar = 47;
 
 		expect(console.warn)
@@ -54,8 +48,6 @@ describe("state", () => {
 		let expectedNewState,
 			subscriber1 = jasmine.createSpy("subscriber1"),
 			subscriber2 = jasmine.createSpy("subscriber2");
-
-		state = State({ foo: 47 });
 
 		state.subscribe(subscriber1);
 		state.subscribe(subscriber2);
@@ -72,8 +64,6 @@ describe("state", () => {
 
 	it("should not publish when there's no change", () => {
 		let subscriber = jasmine.createSpy("subscriber");
-
-		state = State({ foo: 47 });
 
 		state.subscribe(subscriber);
 
