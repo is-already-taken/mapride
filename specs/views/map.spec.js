@@ -4,12 +4,14 @@ import { MAPBOX_ACCESS_TOKEN } from "../../src/js/config.js";
 import { MapModule } from "../../src/js/views/map.js";
 const Map = MapModule.Map;
 
+const TRACK_COLOR = "#0000ff";
+
 describe("Map", () => {
 	let L,
 		dummyEl,
 		map,
 		mockState,
-		polyline,
+		trackPolyline,
 		stateSetInterceptor,
 		tileLayer;
 
@@ -31,19 +33,26 @@ describe("Map", () => {
 			"setView"
 		]);
 
-		polyline = jasmine.createSpyObj("Leaflet:polyline", [
+		trackPolyline = jasmine.createSpyObj("Leaflet:polyline (track)", [
 			"addTo",
 			"setLatLngs"
 		]);
 
-		polyline.addTo.and.returnValue(polyline);
+		trackPolyline.addTo.and.returnValue(trackPolyline);
 
 		tileLayer = jasmine.createSpyObj("Leaflet:tileLayer", [
 			"addTo"
 		]);
 
 		L.map.and.returnValue(map);
-		L.polyline.and.returnValue(polyline);
+		L.polyline.and.callFake((coodinates, options) => {
+			// Return instace mocks depending on the color option
+			const callOptionMap = {
+				[TRACK_COLOR]: trackPolyline
+			};
+
+			return callOptionMap[options.color];
+		});
 		L.tileLayer.and.returnValue(tileLayer);
 
 		stateSetInterceptor = jasmine.createSpy("state:set")
@@ -98,12 +107,18 @@ describe("Map", () => {
 
 		it("should create a blue polyline with no geocoordinates", () => {
 			expect(L.polyline).toHaveBeenCalledWith([], {
-				color: "#0000ff"
+				color: TRACK_COLOR
+			});
+		});
+
+		it("should create a cyan polyline with no geocoordinates", () => {
+			expect(L.polyline).toHaveBeenCalledWith([], {
+				color: IN_SEGMENT_COLOR
 			});
 		});
 
 		it("should add the polyline to the map", () => {
-			expect(polyline.addTo).toHaveBeenCalledWith(map);
+			expect(trackPolyline.addTo).toHaveBeenCalledWith(map);
 		});
 	});
 
@@ -132,7 +147,7 @@ describe("Map", () => {
 			it("should set polyline with the path locations", () => {
 				const geocoordinates = path.map(([, latLng]) => latLng);
 
-				expect(polyline.setLatLngs).toHaveBeenCalledWith(geocoordinates);
+				expect(trackPolyline.setLatLngs).toHaveBeenCalledWith(geocoordinates);
 			});
 		});
 
@@ -148,7 +163,7 @@ describe("Map", () => {
 			});
 
 			it("should not set geocoordinates", () => {
-				expect(polyline.setLatLngs).not.toHaveBeenCalled();
+				expect(trackPolyline.setLatLngs).not.toHaveBeenCalled();
 			});
 		});
 
