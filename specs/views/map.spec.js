@@ -27,6 +27,7 @@ describe("Map", () => {
 		]);
 
 		map = jasmine.createSpyObj("Leaflet.map", [
+			"getBounds",
 			"setView"
 		]);
 
@@ -148,6 +149,42 @@ describe("Map", () => {
 
 			it("should not set geocoordinates", () => {
 				expect(polyline.setLatLngs).not.toHaveBeenCalled();
+			});
+		});
+
+		describe('"playing" changes', () => {
+			let bounds;
+
+			beforeEach(() => {
+				mockState.state.path = path;
+				mockState.state.playing = true;
+				mockState.state.time = 2;
+
+				bounds = jasmine.createSpyObj("Leaflet:bounds", ["contains"]);
+				map.getBounds.and.returnValue(bounds);
+
+				bounds.contains.and.returnValue(true);
+			});
+
+			it("should set the view to the current time's location", () => {
+				let [, latLng] = path[1];
+
+				bounds.contains.and.returnValue(false);
+
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { playing: true });
+				});
+
+				expect(bounds.contains).toHaveBeenCalledWith(latLng);
+				expect(map.setView).toHaveBeenCalledWith(latLng, 15);
+			});
+
+			it("should set the view if it already shows the location", () => {
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { playing: true });
+				});
+
+				expect(map.setView).not.toHaveBeenCalled();
 			});
 		});
 	});

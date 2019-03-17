@@ -30,6 +30,17 @@ function Map(appState) {
 			map.setView(latLng, 13);
 			trackPolyline.setLatLngs(latLngs);
 		}
+
+		if ("playing" in change && state.playing) {
+			[, latLng] = state.path.find(([time]) => {
+				return (time >= Math.floor(state.time));
+			});
+
+			// Don't pan around when the location is in view already
+			if (!map.getBounds().contains(latLng)) {
+				map.setView(latLng, 15);
+			}
+		}
 	});
 }
 
