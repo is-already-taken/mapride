@@ -4,11 +4,32 @@
 import { MAPBOX_ACCESS_TOKEN } from "../config.js";
 
 const TRACK_COLOR = "#0000ff";
+const IN_SEGMENT_COLOR = "#009900";
+
+/**
+ * Get the lat/long pair for the path we're currently in
+ */
+function getInSegment(path, time) {
+	let index,
+		pair = [];
+
+	index = path.findIndex(([locationTime]) => {
+		return (locationTime >= time);
+	});
+
+	// Ensure there are always two coordinates. Return empty otherwise.
+	if (index < path.length - 1) {
+		pair = [path[index][1], path[index + 1][1]];
+	}
+
+	return pair;
+}
 
 function Map(appState) {
 	const el = document.querySelector("#map");
 	const map = L.map(el);
 	const trackPolyline = L.polyline([], { color: TRACK_COLOR }).addTo(map);
+	const inSegmentPolyline = L.polyline([], { color: IN_SEGMENT_COLOR }).addTo(map);
 
 	L.tileLayer("https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}", {
 		attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -40,6 +61,10 @@ function Map(appState) {
 			if (!map.getBounds().contains(latLng)) {
 				map.setView(latLng, 15);
 			}
+		}
+
+		if ("time" in change && state.playing) {
+			inSegmentPolyline.setLatLngs(getInSegment(state.path, state.time));
 		}
 	});
 }

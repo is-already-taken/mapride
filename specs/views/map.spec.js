@@ -5,12 +5,14 @@ import { MapModule } from "../../src/js/views/map.js";
 const Map = MapModule.Map;
 
 const TRACK_COLOR = "#0000ff";
+const IN_SEGMENT_COLOR = "#009900";
 
 describe("Map", () => {
 	let L,
 		dummyEl,
 		map,
 		mockState,
+		inSegmentPolyline,
 		trackPolyline,
 		stateSetInterceptor,
 		tileLayer;
@@ -40,6 +42,13 @@ describe("Map", () => {
 
 		trackPolyline.addTo.and.returnValue(trackPolyline);
 
+		inSegmentPolyline = jasmine.createSpyObj("Leaflet:polyline (in-segment)", [
+			"addTo",
+			"setLatLngs"
+		]);
+
+		inSegmentPolyline.addTo.and.returnValue(inSegmentPolyline);
+
 		tileLayer = jasmine.createSpyObj("Leaflet:tileLayer", [
 			"addTo"
 		]);
@@ -48,7 +57,8 @@ describe("Map", () => {
 		L.polyline.and.callFake((coodinates, options) => {
 			// Return instace mocks depending on the color option
 			const callOptionMap = {
-				[TRACK_COLOR]: trackPolyline
+				[TRACK_COLOR]: trackPolyline,
+				[IN_SEGMENT_COLOR]: inSegmentPolyline
 			};
 
 			return callOptionMap[options.color];
@@ -200,6 +210,95 @@ describe("Map", () => {
 				});
 
 				expect(map.setView).not.toHaveBeenCalled();
+			});
+
+			it("should not set the view if playing changed to false", () => {
+				let [, latLng] = path[1];
+
+				bounds.contains.and.returnValue(false);
+
+				mockState.state.playing = false;
+
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { playing: false });
+				});
+				
+				expect(map.setView).not.toHaveBeenCalled();
+			});
+		});
+
+		describe("'playing' does not change", () => {
+			let bounds;
+
+			beforeEach(() => {
+				mockState.state.path = path;
+				mockState.state.playing = false;
+				mockState.state.time = 2;
+
+				bounds = jasmine.createSpyObj("Leaflet:bounds", ["contains"]);
+				map.getBounds.and.returnValue(bounds);
+				bounds.contains.and.returnValue(true);
+
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { foo: 42 });
+				});
+			});
+
+			it("should not set the view", () => {
+				let [, latLng] = path[1];
+
+				bounds.contains.and.returnValue(false);
+
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { playing: true });
+				});
+
+				expect(map.setView).not.toHaveBeenCalled();
+			});
+		});
+
+		describe("'time' changes", () => {
+			beforeEach(() => {
+				mockState.state.path = path;
+				mockState.state.playing = true;
+			});
+
+			it("should set polyline with the next two coodinates at the time index", () => {
+				const geocoordinates = path.map(([, latLng]) => latLng)
+										.slice(1,3);
+
+				mockState.state.time = 2;
+
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { time: 2 });
+				});
+
+				expect(inSegmentPolyline.setLatLngs).toHaveBeenCalledWith(geocoordinates);
+			});
+
+			it("should set polyline with no coodinates when time index is at end", () => {
+				mockState.state.time = 5;
+
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { time: 2 });
+				});
+
+				expect(inSegmentPolyline.setLatLngs).toHaveBeenCalledWith([]);
+			});
+		});
+
+		describe("'time' does not change", () => {
+			beforeEach(() => {
+				mockState.state.path = path;
+				mockState.state.time = 2;
+
+				mockState.subscribe.calls.allArgs().forEach(([subscriberFn]) => {
+					subscriberFn(mockState.state, { foo: 42 });
+				});
+			});
+
+			it("should not set geocoordinates", () => {
+				expect(inSegmentPolyline.setLatLngs).not.toHaveBeenCalled();
 			});
 		});
 	});
