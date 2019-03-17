@@ -29,6 +29,9 @@ function Video(appState) {
 			width: "1280",
 			videoId: appState.state.videoId,
 			events: {
+				onReady: () => {
+					appState.state.videoReady = true;
+				},
 				onStateChange: () => {
 					const playing = isPlaying();
 

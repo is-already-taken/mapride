@@ -89,11 +89,49 @@ describe("Video", () => {
 					height: "720",
 					width: "1280",
 					events: {
+						onReady: jasmine.any(Function),
 						onStateChange: jasmine.any(Function)
 					},
 					videoId: state.state.videoId,
 				})
 			);
+		});
+	});
+
+	describe("Player.onReady", () => {
+		let capturedOnReady;
+
+		beforeEach((done) => {
+			instantiationTrigger = () => {
+				capturedOnReady = instantiationArgs[1]
+										.events.onReady;
+
+				// Video internally uses a async function (Promise), wait
+				// for the next tick
+				setTimeout(done);
+
+				// Install clock after player was initialize, same reason
+				// as before
+				jasmine.clock().install();
+			};
+
+			spyOn(MockPlayer.prototype, "getPlayerState")
+				.and.returnValue(0);
+			spyOn(MockPlayer.prototype, "getCurrentTime")
+				.and.returnValue(0);
+
+			Video(state);
+			resolveScriptLoad();
+		});
+
+		afterEach(() => {
+			jasmine.clock().uninstall();
+		});
+
+		it("should set State videoReady: true when called", () => {
+			capturedOnReady();
+
+			expect(state.state.videoReady).toBe(true);
 		});
 	});
 
