@@ -73,7 +73,10 @@ function runEslint(changes) {
 function runTests({ port: karmaPort }) {
 	// Run with no-op completion handler to prevent default
 	// handler from exiting the process.
-	KarmaRunner.run({ port: karmaPort }, () => {});
+	KarmaRunner.run(
+		{ port: karmaPort, runnerLogging: false },
+		() => {}
+	);
 }
 
 /**
