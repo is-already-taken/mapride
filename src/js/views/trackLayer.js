@@ -33,11 +33,8 @@ function TrackLayer(map, appState) {
 
 		if ("allReady" in change) {
 			latLngs = state.path.map(([, latLng]) => latLng);
-			// Pick one location in the middle of the route to center the
-			// map in the middle of the route.
-			latLng = latLngs[Math.floor(latLngs.length / 2)];
 
-			map.setView(latLng, 13);
+			map.fitBounds([latLngs[0], latLngs[latLngs.length - 1]]);
 			trackPolyline.setLatLngs(latLngs);
 		}
 

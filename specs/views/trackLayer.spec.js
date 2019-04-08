@@ -22,6 +22,7 @@ describe("TrackLayer", () => {
 		]);
 
 		map = jasmine.createSpyObj("Leaflet.map", [
+			"fitBounds",
 			"getBounds",
 			"setView"
 		]);
@@ -103,8 +104,8 @@ describe("TrackLayer", () => {
 				});
 			});
 
-			it("should set the view to the middle route location", () => {
-				expect(map.setView).toHaveBeenCalledWith([5, 6], 13);
+			it("should set the view to contain the route start/end box", () => {
+				expect(map.fitBounds).toHaveBeenCalledWith([[1, 2], [9, 10]]);
 			});
 
 			it("should set polyline with the path locations", () => {
