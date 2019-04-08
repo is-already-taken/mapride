@@ -83,8 +83,6 @@ describe("App", () => {
 	});
 
 	it('should set "allReady" on state when "videoReady" is true and "path" has elements', (done) => {
-		let subscribers = [];
-
 		mockState.state.videoReady = true;
 		mockState.state.path = [[/*one element, data does not matter*/]];
 
